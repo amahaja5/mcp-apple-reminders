@@ -10,7 +10,7 @@
   "scripts": {
     "build": "bun build reminders-server.ts --outdir dist --target node",
     "start": "bun reminders-server.ts",
-    "test": "echo 'No tests yet'"
+    "test": "bun test reminders-server.test.ts"
   },
   "exports": {
     ".": "./reminders-server.ts"
