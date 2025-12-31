@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "apple-reminders": {
+      "command": "/Users/<YOUR_USER_NAME>/.bun/bin/bun",
+      "args": ["/Users/<YOUR_USER_NAME>/mcp-apple-reminders/reminders-server.ts"]
+    }
+  }
+}
