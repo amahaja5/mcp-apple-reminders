@@ -1,12 +1,75 @@
 // Usage: bun test reminders-server.test.ts
-import { test, describe } from "node:test";
+import { test, describe, before, after } from "node:test";
 import assert from "node:assert";
 import { runJxa } from "run-jxa";
 import { z } from "zod";
 
+// Platform detection for macOS-only tests
+const isMacOS = process.platform === "darwin";
+
+// Generate unique test list name
+const generateTestListName = () =>
+  `Test-MCP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+// Delete test list (cleanup utility)
+const deleteTestList = async (listName: string) => {
+  const script = `
+    const app = Application('Reminders');
+    try {
+      const list = app.lists.byName("${listName}");
+      list.delete();
+      return "deleted";
+    } catch (e) {
+      return "not_found";
+    }
+  `;
+  try {
+    await runJxa(script);
+  } catch (error) {
+    console.warn(`Warning: Failed to delete test list ${listName}`, error);
+  }
+};
+
 describe("Apple Reminders MCP Server", async () => {
   describe("JXA Bridge Functions", () => {
-    test.skip("should fetch reminder lists (macOS only)", async () => {
+    let testListName: string;
+
+    before(async () => {
+      if (!isMacOS) return;
+
+      // Create isolated test list for all tests
+      testListName = generateTestListName();
+      const script = `
+        const app = Application('Reminders');
+        const newList = app.List({ name: "${testListName}" });
+        app.lists.push(newList);
+        return "created";
+      `;
+      try {
+        const result = await runJxa(script);
+        console.log(`Created test list: ${testListName}`);
+      } catch (error) {
+        console.error(`Failed to create test list: ${error}`);
+        console.error(
+          "Note: You may need to grant Terminal/Bun permission to access Reminders in System Settings > Privacy & Security > Automation"
+        );
+        throw error;
+      }
+    });
+
+    after(async () => {
+      if (!isMacOS) return;
+
+      // Delete the entire test list and all its contents
+      try {
+        await deleteTestList(testListName);
+        console.log(`Cleaned up test list: ${testListName}`);
+      } catch (error) {
+        console.warn(`Failed to cleanup test list: ${error}`);
+      }
+    });
+
+    test("should fetch reminder lists (macOS only)", { skip: !isMacOS, timeout: 30000 }, async () => {
       const script = `
         const app = Application('Reminders');
         const lists = app.lists();
@@ -25,11 +88,11 @@ describe("Apple Reminders MCP Server", async () => {
       assert.ok(lists[0].id, "Each list should have an id");
     });
 
-    test.skip("should create a test reminder list", async () => {
-      const testListName = `Test-${Date.now()}`;
+    test("should create a test reminder list", { skip: !isMacOS, timeout: 10000 }, async () => {
+      const localTestListName = `Test-${Date.now()}`;
       const script = `
         const app = Application('Reminders');
-        const newList = app.List({ name: "${testListName}" });
+        const newList = app.List({ name: "${localTestListName}" });
         app.lists.push(newList);
         return "List created successfully";
       `;
@@ -41,7 +104,7 @@ describe("Apple Reminders MCP Server", async () => {
       const verifyScript = `
         const app = Application('Reminders');
         try {
-          const list = app.lists.byName("${testListName}");
+          const list = app.lists.byName("${localTestListName}");
           return list.name();
         } catch (e) {
           return "not found";
@@ -49,15 +112,18 @@ describe("Apple Reminders MCP Server", async () => {
       `;
 
       const verification = await runJxa(verifyScript);
-      assert.equal(verification, testListName, "List should exist");
+      assert.equal(verification, localTestListName, "List should exist");
+
+      // Cleanup: delete the created list
+      await deleteTestList(localTestListName);
     });
 
-    test.skip("should create a reminder with basic properties", async () => {
+    test("should create a reminder with basic properties", { skip: !isMacOS, timeout: 10000 }, async () => {
       const testTitle = `Test Reminder ${Date.now()}`;
       const script = `
         const app = Application('Reminders');
         try {
-          const list = app.lists.byName("Reminders");
+          const list = app.lists.byName("${testListName}");
           const newReminder = app.Reminder({
             name: "${testTitle}"
           });
@@ -75,7 +141,7 @@ describe("Apple Reminders MCP Server", async () => {
       );
     });
 
-    test.skip("should create a reminder with all properties", async () => {
+    test("should create a reminder with all properties", { skip: !isMacOS, timeout: 10000 }, async () => {
       const testTitle = `Full Test Reminder ${Date.now()}`;
       const testNotes = "Test notes content";
       const dueDate = new Date("2025-12-31T10:00:00").toISOString();
@@ -84,7 +150,7 @@ describe("Apple Reminders MCP Server", async () => {
       const script = `
         const app = Application('Reminders');
         try {
-          const list = app.lists.byName("Reminders");
+          const list = app.lists.byName("${testListName}");
           const newReminder = app.Reminder({
             name: "${testTitle}",
             body: "${testNotes}",
@@ -105,11 +171,11 @@ describe("Apple Reminders MCP Server", async () => {
       );
     });
 
-    test.skip("should fetch reminders from a list (macOS only)", async () => {
+    test("should fetch reminders from a list (macOS only)", { skip: !isMacOS, timeout: 60000 }, async () => {
       const script = `
         const app = Application('Reminders');
         try {
-          const list = app.lists.byName("Reminders");
+          const list = app.lists.byName("${testListName}");
           const reminders = list.reminders();
           return JSON.stringify(reminders.slice(0, 5).map(reminder => ({
             name: reminder.name(),
@@ -133,31 +199,41 @@ describe("Apple Reminders MCP Server", async () => {
       }
     });
 
-    test.skip("should complete a reminder", async () => {
+    test("should complete a reminder", { skip: !isMacOS, timeout: 30000 }, async () => {
       const testTitle = `Complete Test ${Date.now()}`;
 
       // Create a reminder first
       const createScript = `
         const app = Application('Reminders');
-        const list = app.lists.byName("Reminders");
+        const list = app.lists.byName("${testListName}");
         const newReminder = app.Reminder({ name: "${testTitle}" });
         list.reminders.push(newReminder);
         return "created";
       `;
       await runJxa(createScript);
 
-      // Now complete it
+      // Now complete it (with delay to ensure reminder is persisted)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       const completeScript = `
         const app = Application('Reminders');
         try {
-          const list = app.lists.byName("Reminders");
-          const reminders = list.reminders.whose({ name: "${testTitle}" });
-          if (reminders.length > 0) {
-            reminders[0].completed = true;
-            return "completed";
-          } else {
-            return "not found";
+          const list = app.lists.byName("${testListName}");
+          if (!list.exists()) {
+            return "Error: List not found";
           }
+          const allReminders = list.reminders();
+          const reminderCount = allReminders.length;
+          let found = false;
+          for (let i = 0; i < reminderCount; i++) {
+            const reminder = allReminders[i];
+            if (reminder.name() === "${testTitle}") {
+              reminder.completed = true;
+              found = true;
+              break;
+            }
+          }
+          return found ? "completed" : "not found (checked " + reminderCount + " reminders)";
         } catch (e) {
           return "Error: " + e.toString();
         }
@@ -331,7 +407,7 @@ describe("Apple Reminders MCP Server", async () => {
       console.log(`Script generation took ${duration.toFixed(2)}ms`);
     });
 
-    test.skip("should measure JXA execution time for list fetch", async () => {
+    test("should measure JXA execution time for list fetch", { skip: !isMacOS, timeout: 30000 }, async () => {
       const start = performance.now();
 
       const script = `
@@ -348,14 +424,14 @@ describe("Apple Reminders MCP Server", async () => {
       console.log(`Fetching reminder lists took ${duration.toFixed(2)}ms`);
     });
 
-    test.skip("should measure batch creation performance", async () => {
+    test("should measure batch creation performance", { skip: !isMacOS, timeout: 60000 }, async () => {
       const batchSize = 10;
-      const testListName = `Batch-Test-${Date.now()}`;
+      const localTestListName = `Batch-Test-${Date.now()}`;
 
       // Create test list
       const createListScript = `
         const app = Application('Reminders');
-        const newList = app.List({ name: "${testListName}" });
+        const newList = app.List({ name: "${localTestListName}" });
         app.lists.push(newList);
         return "created";
       `;
@@ -367,7 +443,7 @@ describe("Apple Reminders MCP Server", async () => {
       for (let i = 0; i < batchSize; i++) {
         const script = `
           const app = Application('Reminders');
-          const list = app.lists.byName("${testListName}");
+          const list = app.lists.byName("${localTestListName}");
           const newReminder = app.Reminder({ name: "Item ${i + 1}" });
           list.reminders.push(newReminder);
           return "created";
@@ -383,6 +459,9 @@ describe("Apple Reminders MCP Server", async () => {
       console.log(`Average per reminder: ${avgPerItem.toFixed(2)}ms`);
 
       assert.ok(duration > 0, "Should take some time");
+
+      // Cleanup: delete the created list
+      await deleteTestList(localTestListName);
     });
   });
 
