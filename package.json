@@ -1,34 +1,23 @@
 {
-  "name": "apple-notes-mcp",
+  "name": "apple-reminders-mcp",
   "version": "1.0.0",
   "author": "",
   "type": "module",
-  "main": "index.ts",
-  "description": "",
-  "keywords": [],
+  "main": "reminders-server.ts",
+  "description": "MCP server for Apple Reminders - Create and manage reminders via Claude Desktop",
+  "keywords": ["mcp", "apple-reminders", "reminders", "claude", "automation", "jxa"],
   "license": "ISC",
   "scripts": {
-    "build": "bun build index.ts --outdir dist --target node",
-    "build:reminders": "bun build reminders-server.ts --outdir dist --target node",
-    "start": "bun index.ts",
-    "start:reminders": "bun reminders-server.ts",
-    "purge-db": "rm -rf ~/.mcp-apple-notes",
-    "test": "npx tsx index.test.ts"
+    "build": "bun build reminders-server.ts --outdir dist --target node",
+    "start": "bun reminders-server.ts",
+    "test": "echo 'No tests yet'"
   },
   "exports": {
-    ".": "./index.ts"
+    ".": "./reminders-server.ts"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^1.0.8",
-    "@huggingface/transformers": "^3.1.2",
-    "@lancedb/lancedb": "^0.14.0",
-    "@langchain/textsplitters": "^0.1.0",
     "@modelcontextprotocol/sdk": "^1.0.3",
     "run-jxa": "^3.0.0",
-    "turndown": "^7.2.0",
     "zod": "^3.24.1"
-  },
-  "devDependencies": {
-    "@types/turndown": "^5.0.5"
   }
 }

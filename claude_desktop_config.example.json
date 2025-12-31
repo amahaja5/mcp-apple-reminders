@@ -1,12 +1,8 @@
 {
   "mcpServers": {
-    "apple-notes": {
-      "command": "/Users/<YOUR_USER_NAME>/.bun/bin/bun",
-      "args": ["/Users/<YOUR_USER_NAME>/mcp-apple-notes/index.ts"]
-    },
     "apple-reminders": {
       "command": "/Users/<YOUR_USER_NAME>/.bun/bin/bun",
-      "args": ["/Users/<YOUR_USER_NAME>/mcp-apple-notes/reminders-server.ts"]
+      "args": ["/Users/<YOUR_USER_NAME>/mcp-apple-reminders/reminders-server.ts"]
     }
   }
 }
