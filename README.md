@@ -6,7 +6,18 @@ A [Model Context Protocol (MCP)](https://www.anthropic.com/news/model-context-pr
 
 ![MCP Apple Notes](./images/demo.png)
 
-## Features
+## 🆕 Apple Reminders Server Available!
+
+This repository now includes **two MCP servers**:
+
+1. **Apple Notes Server** (`index.ts`) - Semantic search and RAG over Apple Notes
+2. **Apple Reminders Server** (`reminders-server.ts`) - Create and manage reminders in batches
+
+📋 **[See REMINDERS-README.md](./REMINDERS-README.md)** for full documentation on the Reminders server!
+
+---
+
+## Features (Apple Notes Server)
 
 - 🔍 Semantic search over Apple Notes using [`all-MiniLM-L6-v2`](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) on-device embeddings model
 - 📝 Full-text search capabilities
