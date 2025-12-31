@@ -1,4 +1,4 @@
-// Usage: bun test reminders-server.test.ts
+// Usage: bun test index.test.ts
 import { test, describe } from "node:test";
 import assert from "node:assert";
 import { runJxa } from "run-jxa";
@@ -6,7 +6,7 @@ import { z } from "zod";
 
 describe("Apple Reminders MCP Server", async () => {
   describe("JXA Bridge Functions", () => {
-    test.skip("should fetch reminder lists (macOS only)", async () => {
+    test("should fetch reminder lists", async () => {
       const script = `
         const app = Application('Reminders');
         const lists = app.lists();
@@ -105,7 +105,7 @@ describe("Apple Reminders MCP Server", async () => {
       );
     });
 
-    test.skip("should fetch reminders from a list (macOS only)", async () => {
+    test("should fetch reminders from a list", async () => {
       const script = `
         const app = Application('Reminders');
         try {
@@ -331,7 +331,7 @@ describe("Apple Reminders MCP Server", async () => {
       console.log(`Script generation took ${duration.toFixed(2)}ms`);
     });
 
-    test.skip("should measure JXA execution time for list fetch", async () => {
+    test("should measure JXA execution time for list fetch", async () => {
       const start = performance.now();
 
       const script = `
