@@ -90,7 +90,7 @@ Open `Settings → Developer → Edit Config` and add:
   "mcpServers": {
     "apple-reminders": {
       "command": "/Users/<YOUR_USER_NAME>/.bun/bin/bun",
-      "args": ["/Users/<YOUR_USER_NAME>/mcp-apple-notes/reminders-server.ts"]
+      "args": ["/Users/<YOUR_USER_NAME>/mcp-apple-notes/index.ts"]
     }
   }
 }
@@ -184,7 +184,7 @@ tail -n 50 -f ~/Library/Logs/Claude/mcp.log
 ```
 Claude Desktop
     ↓ (MCP Protocol)
-reminders-server.ts
+index.ts
     ↓ (JXA/run-jxa)
 Apple Reminders App
 ```
@@ -195,12 +195,17 @@ All processing happens locally on your Mac!
 
 **Run the server directly:**
 ```bash
-bun start:reminders
+bun start
 ```
 
 **Build the server:**
 ```bash
-bun build:reminders
+bun build
+```
+
+**Run tests:**
+```bash
+bun test
 ```
 
 ## Technical Details

@@ -3,17 +3,17 @@
   "version": "1.0.0",
   "author": "",
   "type": "module",
-  "main": "reminders-server.ts",
+  "main": "index.ts",
   "description": "MCP server for Apple Reminders - Create and manage reminders via Claude Desktop",
   "keywords": ["mcp", "apple-reminders", "reminders", "claude", "automation", "jxa"],
   "license": "ISC",
   "scripts": {
-    "build": "bun build reminders-server.ts --outdir dist --target node",
-    "start": "bun reminders-server.ts",
-    "test": "bun test reminders-server.test.ts"
+    "build": "bun build index.ts --outdir dist --target node",
+    "start": "bun index.ts",
+    "test": "bun test index.test.ts"
   },
   "exports": {
-    ".": "./reminders-server.ts"
+    ".": "./index.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.3",
